@@ -1,7 +1,7 @@
 pinyin-conversion
 =================
 
-Convert pinyin strings from numerical form (ni3 hao3) to a diacritical form (nǐ hǎo)
+Objective-C tool that converts pinyin NSStrings in numerical form (ni3 hao3) to a diacritical form (nǐ hǎo)
 
 About
 =====
