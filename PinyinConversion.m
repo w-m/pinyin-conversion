@@ -1,5 +1,6 @@
 //
 //  PinyinConversion.m
+//  PolyVoicer
 //
 //  Created by Wieland Morgenstern on 15.11.12.
 //
@@ -47,62 +48,65 @@ NSDictionary *substitutions;
     return [word stringByReplacingCharactersInRange:vowelRange withString:replacement];
 }
 
++ (NSString *)convertWord:(NSString *)word {
+    // search word backwards for the first digit
+    NSRange foundRange = [word rangeOfCharacterFromSet:NSCharacterSet.decimalDigitCharacterSet
+                                               options:NSBackwardsSearch];
+
+    if (foundRange.location == NSNotFound) {
+        return word;
+    }
+
+    if (foundRange.location < word.length - 1) {
+        // the suffix might contain punctuation ("nü3;")
+        NSString *suffix = [word substringFromIndex:foundRange.location + 1];
+
+        // but if it contains letters it's not a valid pinyin string ("n3e")
+        if ([suffix rangeOfCharacterFromSet:NSCharacterSet.letterCharacterSet].location != NSNotFound) {
+            return word;
+        }
+    }
+
+    NSInteger number = [word substringFromIndex:foundRange.location].integerValue;
+
+    // trim the pinyin number
+    NSString *trimmedWord = [word stringByReplacingCharactersInRange:foundRange withString:@""];
+
+    // fifth tone: neutral
+    if (number == 5) {
+        return trimmedWord;
+    }
+
+    // 1. If there is an "a" or an "e", it will take the tone mark.
+    NSUInteger location = [trimmedWord rangeOfString:@"a" options:NSCaseInsensitiveSearch].location;
+    if (location == NSNotFound) {
+        location = [trimmedWord rangeOfString:@"e" options:NSCaseInsensitiveSearch].location;
+    }
+
+    // 2. If there is an "ou", then the "o" takes the tone mark.
+    if (location == NSNotFound) {
+        location = [trimmedWord rangeOfString:@"ou" options:NSCaseInsensitiveSearch].location;
+    }
+
+    // 3. Otherwise, the second vowel takes the tone mark.
+    if (location == NSNotFound) {
+        NSCharacterSet *pinyinVowels = [NSCharacterSet characterSetWithCharactersInString:@"aɑeiouüv"];
+        location = [trimmedWord rangeOfCharacterFromSet:pinyinVowels options:NSBackwardsSearch|NSCaseInsensitiveSearch].location;
+    }
+
+    if (location == NSNotFound) {
+        return trimmedWord;
+    }
+
+    return [self pinyin:trimmedWord vowel:location tone:number];
+}
+
 + (NSString *)convertPinyin:(NSString *)pinyin {
     NSArray *words = [pinyin componentsSeparatedByCharactersInSet:
                       NSCharacterSet.whitespaceAndNewlineCharacterSet];
 
     NSArray *convertedWords = [words map:^id(NSString *word, NSUInteger idx) {
-
-        // search word backwards for the first digit
-        NSRange foundRange = [word rangeOfCharacterFromSet:NSCharacterSet.decimalDigitCharacterSet
-                                                   options:NSBackwardsSearch];
-
-        if (foundRange.location == NSNotFound) {
-            return word;
-        }
-
-        if (foundRange.location < word.length - 1) {
-            // the suffix might contain punctuation ("nü3;")
-            NSString *suffix = [word substringFromIndex:foundRange.location + 1];
-
-            // but if it contains letters it's not a valid pinyin string ("n3e")
-            if ([suffix rangeOfCharacterFromSet:NSCharacterSet.letterCharacterSet].location != NSNotFound) {
-                return word;
-            }
-        }
-
-        NSInteger number = [word substringFromIndex:foundRange.location].integerValue;
-
-        // trim the pinyin number
-        NSString *trimmedWord = [word stringByReplacingCharactersInRange:foundRange withString:@""];
-
-        // fifth tone: neutral
-        if (number == 5) {
-            return trimmedWord;
-        }
-
-        // 1. If there is an "a" or an "e", it will take the tone mark.
-        NSUInteger location = [trimmedWord rangeOfString:@"a" options:NSCaseInsensitiveSearch].location;
-        if (location == NSNotFound) {
-            location = [trimmedWord rangeOfString:@"e" options:NSCaseInsensitiveSearch].location;
-        }
-
-        // 2. If there is an "ou", then the "o" takes the tone mark.
-        if (location == NSNotFound) {
-            location = [trimmedWord rangeOfString:@"ou" options:NSCaseInsensitiveSearch].location;
-        }
-
-        // 3. Otherwise, the second vowel takes the tone mark.
-        if (location == NSNotFound) {
-            NSCharacterSet *pinyinVowels = [NSCharacterSet characterSetWithCharactersInString:@"aɑeiouüv"];
-            location = [trimmedWord rangeOfCharacterFromSet:pinyinVowels options:NSBackwardsSearch|NSCaseInsensitiveSearch].location;
-        }
-
-        if (location == NSNotFound) {
-            return trimmedWord;
-        }
-
-        return [self pinyin:trimmedWord vowel:location tone:number];
+        return [self convertWord:word];
     }];
 
     return [convertedWords componentsJoinedByString:@" "];
