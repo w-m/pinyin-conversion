@@ -1,13 +1,11 @@
 //
 //  PinyinConversion.m
-//  PolyVoicer
 //
 //  Created by Wieland Morgenstern on 15.11.12.
 //
 //
 
 #import "PinyinConversion.h"
-#import "NSArray+Map.h"
 
 NSDictionary *substitutions;
 
@@ -105,8 +103,10 @@ NSDictionary *substitutions;
     NSArray *words = [pinyin componentsSeparatedByCharactersInSet:
                       NSCharacterSet.whitespaceAndNewlineCharacterSet];
 
-    NSArray *convertedWords = [words map:^id(NSString *word, NSUInteger idx) {
-        return [self convertWord:word];
+    NSMutableArray *convertedWords = [NSMutableArray arrayWithCapacity:words.count];
+
+    [words enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        [convertedWords addObject:[self convertWord:obj]];
     }];
 
     return [convertedWords componentsJoinedByString:@" "];
