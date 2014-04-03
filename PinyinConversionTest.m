@@ -22,6 +22,11 @@
     STAssertEqualObjects(@"mà", [PinyinConversion convertPinyin:@"mà"], @"Should not change already converted pinyin.");
 
     STAssertEqualObjects(@"pi4an", [PinyinConversion convertPinyin:@"pi4an"], @"Strings that contain numbers but are invalid pinyin string should not change");
+
+    STAssertEqualObjects(@"23", [PinyinConversion convertPinyin:@"23"], @"Should not change numbers.");
+
+    STAssertEqualObjects(@"ma0", [PinyinConversion convertPinyin:@"ma0"], @"Should ignore words with non-pinyin numbers.");
+    STAssertEqualObjects(@"ma6", [PinyinConversion convertPinyin:@"ma6"], @"Should ignore words with non-pinyin numbers.");
 }
 
 - (void)testA {
