@@ -73,7 +73,7 @@ NSDictionary *substitutions;
 
     // fifth tone: neutral
     if (number == 5) {
-        return word;
+        return [word stringByReplacingCharactersInRange:foundRange withString:@""];
     }
 
     // 1. If there is an "a" or an "e", it will take the tone mark.
@@ -100,7 +100,7 @@ NSDictionary *substitutions;
     NSString *tonedWord = [self pinyin:word vowel:location tone:number];
     if ([tonedWord isEqualToString:word]) {
         return word;
-    }else{
+    } else {
         return [tonedWord stringByReplacingCharactersInRange:foundRange withString:@""];
     }
 }
