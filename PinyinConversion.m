@@ -12,7 +12,7 @@ NSDictionary *substitutions;
 @implementation PinyinConversion
 
 + (void)initialize {
-    substitutions = [@{
+    substitutions = @{
                      @"a": @[@"ā", @"á", @"ǎ", @"à"],
                      @"ɑ": @[@"ā", @"á", @"ǎ", @"à"],
                      @"e": @[@"ē", @"é", @"ě", @"è"],
@@ -29,7 +29,7 @@ NSDictionary *substitutions;
                      @"U": @[@"Ū", @"Ú", @"Ǔ", @"Ù"],
                      @"Ü": @[@"Ǖ", @"Ǘ", @"Ǚ", @"Ǜ"],
                      @"V": @[@"Ǖ", @"Ǘ", @"Ǚ", @"Ǜ"],
-                     } retain];
+                     };
 }
 
 // place the tonemark
@@ -38,7 +38,11 @@ NSDictionary *substitutions;
     NSRange vowelRange = NSMakeRange(vowelIndex, 1);
     NSString *vowel = [word substringWithRange:vowelRange];
 
-    NSString *replacement = substitutions[vowel][tone - 1];
+    NSString *replacement = nil;
+    
+    if (tone > 0 && tone <= 5) {
+        replacement = substitutions[vowel][tone - 1];
+    }
 
     if (!replacement) {
         return word;
